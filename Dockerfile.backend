@@ -1,0 +1,33 @@
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim-buster
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Install system dependencies needed for some Python packages (e.g., for cryptography or bcrypt)
+# Also include netcat-traditional for potential health checks or dependency wait scripts
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    libffi-dev \
+    libssl-dev \
+    build-essential \
+    netcat-traditional \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the root requirements file and install dependencies
+# This assumes your single requirements.txt has everything
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire project structure into the container
+# Exclude __pycache__ and .env directly to keep image size down
+COPY . .
+RUN rm -rf __pycache__ .env # Remove .env from image if sensitive, rely on runtime env vars
+
+# Expose the port your FastAPI app runs on (default is 8000)
+EXPOSE 8000
+
+# Command to run the application using Uvicorn
+# Make sure 'main:app' matches your FastAPI app's entry point (main.py and 'app = FastAPI()')
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

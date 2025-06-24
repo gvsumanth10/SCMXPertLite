@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Shipment | EXF</title>
+  <!-- <link rel="stylesheet" href="/static/styles.css"> -->
+  <link rel="icon" type="image/png" href="assets/Exafluence-favicon.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* General Body and HTML Reset */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5; /* Light grey background */
+    color: #333;
+    display: flex; /* Use flexbox for overall layout */
+    flex-direction: column; /* Stack top nav then main content wrapper */
+    min-height: 100vh; /* Ensure body takes full viewport height */
+}
+
+/* Base colors for consistency - REFINED */
+:root {
+    --primary-blue: #007BFF;   /* Vibrant blue from logo */
+    --dark-blue: #0056B3;    /* Deeper blue for backgrounds */
+    --accent-red: #E44D26;   /* Red from logo for highlights/logout */
+    --light-gray: #f0f2f5;
+    --medium-gray: #ddd;
+    --text-color: #333;
+    --card-background: #fff;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ------------------------------------------------------------- */
+/* Top Navigation Styles (Always Visible & Responsive) */
+/* ------------------------------------------------------------- */
+.top-nav {
+    display: flex; /* Always visible */
+    width: 100%;
+    background-color: var(--card-background); /* White background for top nav */
+    padding: 15px 25px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    justify-content: space-between; /* Space logo and buttons */
+    align-items: center;
+    color: var(--text-color);
+    position: sticky; /* Make it sticky */
+    top: 0;
+    z-index: 100; /* Ensure it stays on top */
+    flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+    gap: 10px; /* Space between logo section and buttons when wrapped */
+    box-sizing: border-box; /* Include padding in element's total width */
+}
+
+.top-nav .logo-section {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* Prevent logo from shrinking */
+}
+
+.top-nav .nav-logo {
+    height: 30px;
+    margin-right: 10px;
+}
+
+.top-nav .brand-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--primary-blue);
+}
+
+.top-nav-buttons {
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap to next line if needed */
+    gap: 8px; /* Slightly reduced gap between buttons */
+    justify-content: flex-end; /* Align buttons to the right */
+    flex-grow: 1; /* Allow buttons to take available space */
+    align-items: center; /* Vertically align buttons */
+    min-width: 0; /* Allow flex items to shrink below their content size */
+}
+
+.top-nav-button {
+    text-decoration: none;
+    color: var(--primary-blue);
+    padding: 6px 10px; /* Slightly reduced padding for buttons */
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 0.9em; /* Slightly smaller font size */
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between icon and text */
+    white-space: nowrap; /* Prevent button text from breaking */
+    box-sizing: border-box;
+}
+
+.top-nav-button:hover {
+    background-color: var(--light-gray);
+    color: var(--dark-blue);
+}
+
+.top-nav-button.logout-button {
+    background-color: var(--accent-red); /* Red from logo for logout */
+    color: white;
+}
+
+.top-nav-button.logout-button:hover {
+    background-color: #c82333; /* Slightly darker red on hover */
+}
+
+/* Highlight active top nav button with RED */
+.top-nav-button.active {
+    background-color: var(--accent-red); /* Red from logo */
+    color: white;
+    font-weight: bold;
+}
+/* Top Nav Icon Styling */
+.top-nav-button i {
+    font-size: 1.1em; /* Slightly larger icon */
+}
+
+
+/* ------------------------------------------------------------- */
+/* Main Content Area Wrapper (Side Nav + Dashboard Content) */
+/* ------------------------------------------------------------- */
+.main-content-wrapper {
+    display: flex; /* Side nav and main content side-by-side on desktop */
+    flex-grow: 1; /* Takes remaining vertical space below top nav */
+    width: 100%;
+
+    /* Background Image Setup */
+    background-image: url('assets/background_image2.jpg'); /* Adjust path as needed */
+    background-size: cover; /* Covers the entire viewport */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents repetition */
+    background-attachment: fixed; /* Fixes the background during scroll (if content overflows) */
+    /* background-color: #f0f2f5; Fallback color */
+}
+
+/* ------------------------------------------------------------- */
+/* Side Navigation Styles (Collapsible) */
+/* ------------------------------------------------------------- */
+.side-nav {
+    width: 60px; /* Default collapsed width for icons only */
+    background-color: var(--dark-blue); /* Deeper blue background */
+    color: white;
+    padding: 20px 0;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Align content to the start */
+    height: 100%; /* Fill parent height */
+    max-height: calc(100vh - 60px); /* Limit to viewport height minus top nav */
+    overflow-y: hidden; /* Hide scrollbar */
+    flex-shrink: 0;
+    transition: width 0.3s ease; /* Smooth transition for width change */
+    position: sticky; /* Make it sticky */
+    top: 0;
+}
+
+.side-nav:hover {
+    width: 250px; /* Expanded width on hover */
+}
+
+.side-nav .nav-section {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.side-nav .nav-section li {
+    margin-bottom: 5px; /* Spacing between list items */
+}
+
+.side-nav .nav-section a {
+    display: flex; /* For icon and text alignment */
+    align-items: center;
+    padding: 12px 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border-left: 5px solid transparent; /* For active state indication */
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Hide text when collapsed */
+}
+
+.side-nav .nav-section a:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Lighter hover effect */
+    border-left-color: var(--primary-blue); /* Highlight on hover */
+}
+
+/* Highlight active side nav link with RED */
+.side-nav .nav-section a.active {
+    background-color: var(--accent-red); /* Red from logo */
+    border-left-color: white;
+    font-weight: bold;
+}
+
+/* Side Nav Icon and Text Styling */
+.side-nav .nav-section a i {
+    font-size: 1.2em; /* Slightly larger icons for side nav */
+    width: 25px; /* Fixed width for icon to ensure consistent alignment */
+    text-align: center; /* Center the icon within its allocated width */
+    margin-right: 0; /* No margin when collapsed */
+    transition: margin-right 0.3s ease;
+}
+
+.side-nav:hover .nav-section a i {
+    margin-right: 10px; /* Add margin when expanded */
+}
+
+.side-nav .nav-section a span {
+    opacity: 0; /* Hide text by default */
+    pointer-events: none; /* Prevent text from being clickable when hidden */
+    transition: opacity 0.3s ease;
+    flex-grow: 1; /* Allow text to take up space when visible */
+}
+
+.side-nav:hover .nav-section a span {
+    opacity: 1; /* Show text on hover */
+    pointer-events: auto; /* Make text clickable again */
+}
+
+
+/* ------------------------------------------------------------- */
+/* Main Dashboard Content Area */
+/* ------------------------------------------------------------- */
+.dashboard-content {
+    flex-grow: 1; /* Takes remaining space next to side nav */
+    padding: 25px;
+    background-color: var(--light-gray);
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center dashboard card horizontally */
+}
+
+/* Dashboard Card Styles */
+.dashboard-card {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+    width: fit-content; /* Make card fit its content's width */
+    height: fit-content; /* Make card fit its content's height */
+    text-align: center; /* Center content within the card */
+    max-width: 800px; /* Limit card width for better readability */
+    margin: 0; /* Remove auto margin as parent centers it */
+    margin-bottom: 25px; /* Add margin to bottom if multiple cards */
+}
+
+.dashboard-card h2 {
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+.dashboard-card p {
+    font-size: 1.1em;
+    color: var(--text-color);
+    margin-bottom: 25px;
+}
+
+.dashboard-card p strong {
+    color: var(--dark-blue);
+}
+
+/* Button Grid for actions - STRONGLY HORIZONTAL ARRANGEMENT */
+.btn-grid {
+    display: flex; /* Changed to flexbox for explicit horizontal control */
+    flex-wrap: wrap; /* Allow buttons to wrap to the next line */
+    justify-content: center; /* Center the buttons horizontally */
+    align-items: center; /* Vertically align buttons in the row */
+    gap: 15px; /* Spacing between buttons */
+    margin-top: 20px;
+    width: 100%; /* Ensure it takes full width of its parent */
+    box-sizing: border-box; /* Include padding in element's total width */
+}
+
+.dashboard-button {
+    padding: 15px 20px;
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+    text-decoration: none;
+    flex-shrink: 0; /* Prevent buttons from shrinking too much */
+    flex-grow: 1; /* Allow buttons to grow to fill space if needed */
+    max-width: 250px; /* Limit max width for individual buttons */
+    min-width: 180px; /* Ensure minimum width for buttons */
+    box-sizing: border-box; /* Include padding in total width */
+}
+
+.dashboard-button:hover {
+    background-color: var(--dark-blue);
+    transform: translateY(-2px);
+}
+
+/* Message Box */
+#msg {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    text-align: center;
+}
+
+/* General button styling (from login/signup, ensure consistency) */
+.btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.btn:hover {
+    background-color: var(--dark-blue);
+}
+
+/* Styling for Create Shipment Page Content (Form Card) */
+/* This ensures the form card takes up appropriate space within the flex container */
+.shipment-create-content {
+    flex-grow: 1; /* Allows it to take up remaining space next to the side nav */
+    padding: 25px; /* Consistent padding with dashboard-content */
+    background-color: var(--light-gray); /* Match background */
+    display: flex; /* Use flex to center its content */
+    justify-content: center; /* Center horizontally */
+    align-items: flex-start; /* Align to the top vertically */
+    box-sizing: border-box;
+    overflow-y: auto; /* Allow scrolling if content is long */
+
+    /* Background Image Setup */
+    background-image: url('assets/background_image2.jpg'); /* Adjust path as needed */
+    background-size: cover; /* Covers the entire viewport */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents repetition */
+    background-attachment: fixed; /* Fixes the background during scroll (if content overflows) */
+    /* background-color: #f0f2f5; Fallback color */
+}
+
+/* Styling for the form card itself on the create-shipment page */
+.shipment-create-content .form-card {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 30px;
+    max-width: 1000px; /* Adjust max-width as needed for the form layout */
+    width: 100%; /* Take full width up to max-width */
+    box-sizing: border-box;
+}
+
+.form-card h2{
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+    font-size: 2em;  
+}
+
+.shipment-create-content .form-card h2 i{
+  width: 35px;
+  text-align: center;
+}
+
+/* Form grid layout for two columns */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 20px 30px; /* Row and column gap */
+    margin-bottom: 20px;
+}
+
+.form-grid > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-grid label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+    padding: 10px 12px;
+    margin-bottom: 15px; /* Spacing below each input */
+    border: 1px solid var(--medium-gray);
+    border-radius: 5px;
+    font-size: 1em;
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box; /* Include padding in element's total width */
+}
+
+.form-grid textarea {
+    resize: vertical; /* Allow vertical resizing */
+    min-height: 40px; /* Minimum height for textarea */
+}
+
+/* Form actions (buttons) */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.form-actions .btn {
+    flex-grow: 1;
+    max-width: 200px; /* Limit button width */
+}
+
+.form-actions .btn.cancel {
+    background-color: #6c757d; /* Grey for cancel button */
+}
+
+.form-actions .btn.cancel:hover {
+    background-color: #5a6268;
+}
+
+
+/* ------------------------------------------------------------- */
+/* Responsive Adjustments for Dashboard Layout */
+/* ------------------------------------------------------------- */
+
+@media (min-width: 993px) { /* On larger screens */
+    .main-content-wrapper {
+        flex-direction: row; /* Side nav and content are side-by-side */
+    }
+    .side-nav {
+        /* On larger screens, the hover effect takes over the width */
+        position: sticky;
+        top: 0;
+        height: 100%; /* Make it fill the height of its parent */
+        max-height: calc(100vh - 60px); /* Limit to viewport height minus top nav */
+        overflow-y: hidden; /* Hide scrollbar */
+    }
+}
+
+@media (max-width: 992px) { /* For smaller screens */
+    .top-nav {
+        flex-direction: column; /* Stack logo and buttons vertically */
+        align-items: flex-start; /* Align content to the start */
+        padding: 10px 15px;
+    }
+    .top-nav-buttons {
+        width: 100%;
+        justify-content: space-around; /* Distribute buttons evenly */
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    .main-content-wrapper {
+        flex-direction: column; /* Stack side nav and content vertically */
+    }
+
+    /* Side Nav on Small Screens - Always expanded, no hover effect */
+    .side-nav {
+        width: 100%; /* Side nav takes full width */
+        height: auto; /* Height adjusts to content */
+        position: relative; /* No longer sticky */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); /* Shadow at bottom */
+        order: 2; /* Puts it below the dashboard content on smaller screens */
+        display: flex; /* Show side nav on small screens, below top nav */
+        padding: 10px 0;
+        overflow-y: hidden; /* Hide scrollbar */
+    }
+    .side-nav:hover { /* Disable hover effect on small screens */
+        width: 100%;
+    }
+    .side-nav .nav-section {
+        display: flex; /* Make side nav links horizontal for small screens */
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px 10px; /* Spacing between horizontal links */
+    }
+    .side-nav .nav-section li {
+        margin-bottom: 0; /* Remove vertical margin */
+    }
+    .side-nav .nav-section a {
+        padding: 8px 12px; /* Smaller padding for horizontal links */
+        border-left: none; /* No left border when horizontal */
+        border-bottom: 3px solid transparent; /* Use bottom border for active/hover */
+        /* Ensure text is visible on small screens */
+        white-space: nowrap; /* Keep text on single line */
+        overflow: visible; /* Make text visible */
+    }
+    .side-nav .nav-section a i {
+        margin-right: 5px; /* Small margin for icon on small screens */
+        width: auto; /* Remove fixed width on small screens as text is always visible */
+        min-width: auto;
+        text-align: left; /* Align icon to left of its own space */
+    }
+    .side-nav .nav-section a span {
+        opacity: 1; /* Show text on small screens */
+        pointer-events: auto;
+    }
+    .side-nav:hover .nav-section a span { /* No change on hover for small screens */
+        opacity: 1;
+    }
+
+
+    .dashboard-content {
+        padding: 15px; /* Reduce padding on smaller screens */
+        order: 1; /* Puts dashboard content above side nav on small screens */
+    }
+
+    .dashboard-card {
+        padding: 20px; /* Adjust card padding */
+    }
+
+    .btn-grid {
+        flex-direction: column; /* Stack buttons vertically on small screens */
+        align-items: center; /* Center them */
+        gap: 10px;
+    }
+    .dashboard-button {
+        width: 90%; /* Make buttons wider on small screens */
+        max-width: 300px; /* Limit max width even when wider */
+    }
+
+    /* Create Shipment form responsiveness */
+    .form-grid {
+        grid-template-columns: 1fr; /* Single column on smaller screens */
+    }
+    .shipment-create-content {
+        padding: 15px; /* Adjust padding for smaller screens */
+    }
+}
+  </style>
+</head>
+<body>
+    <div class="top-nav">
+        <div class="logo-section">
+            <img src="assets/exf_company_logo.png" class="nav-logo" alt="EXF" />
+            <span class="brand-title">EXF</span>
+        </div>
+        <div class="top-nav-buttons">
+            <a href="/dashboard" class="top-nav-button"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            <a href="/create-shipment" class="top-nav-button active"><i class="fas fa-plus-square"></i> New Shipment</a>
+            <a href="/shipments" class="top-nav-button admin-only"><i class="fas fa-boxes"></i> Shipments</a>
+            <a href="/my-shipments" class="top-nav-button user-only"><i class="fas fa-box"></i> My Shipments</a>
+            <a href="/manage-users" class="top-nav-button admin-only"><i class="fas fa-users-cog"></i> Manage Users</a>
+            <a href="/device-data" class="top-nav-button admin-only"><i class="fas fa-microchip"></i> Device Data</a> 
+            <a href="/account" class="top-nav-button"><i class="fas fa-user-circle"></i> Account</a>
+            <a href="/login" class="top-nav-button logout-button" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-content-wrapper">
+        <div class="side-nav">
+            <ul class="nav-section">
+                <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/create-shipment" class="active"><i class="fas fa-plus-square"></i> <span>New Shipment</span></a></li>
+                <li><a href="/shipments" class="admin-only"><i class="fas fa-boxes"></i> <span>Shipments</span></a></li>
+                <li><a href="/my-shipments" class="user-only"><i class="fas fa-box"></i> <span>My Shipments</span></a></li>
+                <li><a href="/manage-users" class="admin-only"><i class="fas fa-users-cog"></i> <span>Manage Users</span></a></li>
+                <li><a href="/device-data" class="admin-only"><i class="fas fa-microchip"></i> <span>Device Data</span></a></li>
+                <li><a href="/account"><i class="fas fa-user-circle"></i> <span>Account</span></a></li>
+                <li><a href="/login" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            </ul>
+        </div>
+
+        <div class="shipment-create-content">
+            <div class="form-card">
+                <h2><i class="fas fa-plus-square"></i>Create New Shipment</h2>
+                <form id="shipmentForm">
+                    <div class="form-grid">
+                        <div>
+                            <label>Shipment Number*</label>
+                            <input type="text" name="shipment_number" required />
+                            <label>Route Details*</label>
+                            <select name="route" required>
+                                <option value="">Select Route</option>
+                                <option value="north">North</option>
+                                <option value="south">South</option>
+                                <option value="east">East</option>
+                                <option value="west">West</option>
+                            </select>
+                            <label>Device*</label>
+                            <select name="device" required>
+                                <option value="">Select Device</option>
+                                <option value="sensor-a">Sensor A</option>
+                                <option value="sensor-b">Sensor B</option>
+                            </select>
+                            <label>PO Number*</label>
+                            <input type="text" name="po_number" required />
+                            <label>NDC Number*</label>
+                            <input type="text" name="ndc_number" required />
+                            <label>Serial number of Goods*</label>
+                            <input type="text" name="serial_number" required />
+                        </div>
+
+                        <div>
+                            <label>Container Number*</label>
+                            <input type="text" name="container_number" required />
+                            <label>Goods Type*</label>
+                            <select name="goods_type" required>
+                                <option value="">Select Goods</option>
+                                <option value="pharma">Pharma</option>
+                                <option value="electronics">Electronics</option>
+                            </select>
+                            <label>Expected Delivery Date*</label>
+                            <input type="date" name="delivery_date" required />
+                            <label>Delivery Number*</label>
+                            <input type="text" name="delivery_number" required />
+                            <label>Batch ID*</label>
+                            <input type="text" name="batch_id" required />
+                            <label>Shipment Description*</label>
+                            <textarea name="description" rows="2" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Create Shipment</button>
+                        <button type="reset" class="btn cancel">Clear Details</button>
+                    </div>
+                    <div id="msg"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+    document.getElementById("shipmentForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const token = localStorage.getItem("token");
+        const msg = document.getElementById("msg");
+
+        if (!token) {
+            msg.textContent = "Unauthorized. Please log in.";
+            msg.style.color = "red";
+            return window.location.href = "/login";
+        }
+
+        const data = Object.fromEntries(new FormData(form).entries());
+
+        try {
+            const res = await fetch("/api/shipments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await res.json();
+
+            if (res.status === 201) {
+                msg.textContent = "Shipment created successfully!";
+                msg.style.color = "green";
+                if (res.ok) {
+                    document.getElementById("shipmentForm").reset();
+                }
+            } else {
+                msg.textContent = result.detail || "Failed to create shipment.";
+                msg.style.color = "red";
+            }
+        } catch (err) {
+            msg.textContent = "Server error.";
+            msg.style.color = "red";
+            console.error(err);
+        }
+    });
+
+    function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+    }
+
+    // Role-based sidebar and top nav visibility
+    (async function handleNavByRole() {
+        const token = localStorage.getItem("token");
+        if (!token) return window.location.href = "/login";
+
+        try {
+            const res = await fetch("/api/account", {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                localStorage.removeItem("token");
+                return window.location.href = "/login";
+            }
+
+            const user = await res.json();
+            const isAdmin = user.role === "admin";
+
+            // Update sidebar links visibility
+            document.querySelectorAll(".admin-only").forEach(el => {
+                if (el.tagName === 'LI') { // For side nav list items
+                    el.style.display = isAdmin ? "list-item" : "none";
+                } else { // For top nav buttons
+                    el.style.display = isAdmin ? "flex" : "none";
+                }
+            });
+
+            document.querySelectorAll(".user-only").forEach(el => {
+                if (el.tagName === 'LI') { // For side nav list items
+                    el.style.display = !isAdmin ? "list-item" : "none";
+                } else { // For top nav buttons
+                    el.style.display = !isAdmin ? "flex" : "none";
+                }
+            });
+
+        } catch (err) {
+            console.error("Role fetch failed:", err);
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+        }
+    })();
+</script>
+</body>
+</html>

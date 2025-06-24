@@ -1,0 +1,15 @@
+passlib[bcrypt]
+fastapi
+uvicorn[standard]
+python-multipart
+jinja2
+pydantic
+email-validator
+motor  # async MongoDB driver
+python-jose[cryptography]  # for JWT
+httpx
+kafka-python  # or confluent-kafka
+python-dotenv
+git+https://github.com/psf/requests.git@main
+pymongo
+kafka-python

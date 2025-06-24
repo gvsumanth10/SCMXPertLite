@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up | EXF</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="icon" type="image/png" href="assets/Exafluence-favicon.png" />
+  <style>
+
+    /* General Body and HTML Reset */
+    body, html {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Example font, choose one you like */
+        background-color: #f0f2f5; /* Light grey background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: #333;
+
+        /* Background Image Setup */
+        background-image: url('assets/background_image3.jpg'); /* Adjust path as needed */
+        background-size: cover; /* Covers the entire viewport */
+        background-position: center; /* Centers the image */
+        background-repeat: no-repeat; /* Prevents repetition */
+        background-attachment: fixed; /* Fixes the background during scroll (if content overflows) */
+        background-color: #f0f2f5; /* Fallback color */
+    }
+
+    /* Signup Page Wrapper */
+    .signup-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Container for the two cards */
+    .signup-container {
+        display: flex; /* Enables flexbox for side-by-side cards */
+        background-color: #fff; /* White background for the whole container */
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden; /* Ensures rounded corners are applied correctly */
+        max-width: 900px; /* Adjust as needed */
+        width: 100%;
+    }
+
+    /* Form Card Styles */
+    .form-card {
+        flex: 1; /* Takes up equal space initially */
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .logo-bar {
+        margin-bottom: 25px;
+    }
+
+    .logo {
+        max-width: 150px; /* Adjust logo size */
+        height: auto;
+    }
+
+    .form-card h2 {
+        font-size: 2em;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    .form-card form {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .form-card input[type="text"],
+    .form-card input[type="email"],
+    .form-card input[type="password"] {
+        width: calc(100% - 20px); /* Account for padding */
+        padding: 12px 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1em;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-card input[type="text"]:focus,
+    .form-card input[type="email"]:focus,
+    .form-card input[type="password"]:focus {
+        border-color: #007bff; /* Example focus color */
+    }
+
+    .form-card .btn {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff; /* Primary button color */
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .form-card .btn:hover {
+        background-color: #0056b3; /* Darker shade on hover */
+    }
+
+    .form-card p {
+        margin-top: 20px;
+        font-size: 0.95em;
+        color: #666;
+    }
+
+    .form-card p a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .form-card p a:hover {
+        text-decoration: underline;
+    }
+
+    .message {
+        margin-top: 15px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+
+    /* Illustration Card Styles */
+    .illustration-card {
+        flex: 1; /* Takes up equal space initially */
+        background: linear-gradient(to right, #007bff, #0056b3); /* Gradient background */
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: white;
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+
+    .illustration-image {
+        max-width: 80%; /* Adjust image size */
+        height: auto;
+        margin-bottom: 30px;
+    }
+
+    .illustration-card h2 {
+        font-size: 2em;
+        margin-bottom: 20px;
+        line-height: 1.3;
+    }
+
+    .illustration-card p {
+        font-size: 1.1em;
+        line-height: 1.6;
+        max-width: 400px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .signup-container {
+            flex-direction: column; /* Stack cards vertically on smaller screens */
+            max-width: 400px; /* Adjust max-width for single column layout */
+        }
+
+        .illustration-card {
+            border-top-right-radius: 0; /* Remove specific border radius for stacked layout */
+            border-bottom-left-radius: 12px; /* Add bottom-left radius for illustration card */
+            padding: 30px;
+        }
+
+        .form-card {
+            padding: 30px;
+        }
+    }
+
+    .password-input-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 300px; /* Match form input width */
+        margin-bottom: 15px; /* Adjust margin as needed */
+    }
+
+    .password-input-wrapper input {
+        width: calc(100% - 20px); /* Account for padding */
+        padding: 12px 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1em;
+        outline: none;
+        transition: border-color 0.3s ease;
+        padding-right: 40px; /* Make space for the toggle button */
+    }
+
+    .password-input-wrapper .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        font-size: 0.85em;
+        padding: 5px;
+        border-radius: 4px;
+        transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .password-input-wrapper .toggle-password:hover {
+        color: #007bff;
+        background-color: #f0f0f0;
+    }
+
+    /* If using Font Awesome icons */
+    /* .password-input-wrapper .toggle-password.far {
+        font-size: 1.1em;
+    } */
+  </style>
+  </head>
+<body>
+  <div class="signup-page">
+    <div class="signup-container">
+      <div class="form-card">
+        <div class="logo-bar">
+          <img src="assets/exf_company_logo.png" alt="EXF Logo" class="logo" />
+        </div>
+
+        <h2>Create Account</h2>
+        <form id="signupForm">
+          <input type="text" id="username" placeholder="Username" required />
+
+          <input type="email" id="email" placeholder="Email" required />
+
+          <div class="password-input-wrapper">
+            <input type="password" id="password" placeholder="Password" required />
+            <button type="button" class="toggle-password" data-target="password">Show</button>
+            </div>
+
+          <div class="password-input-wrapper">
+            <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+            <button type="button" class="toggle-password" data-target="confirmPassword">Show</button>
+            </div>
+
+          <button type="submit" class="btn">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="/login">Log in</a></p>
+        <div id="msg" class="message"></div>
+      </div>
+
+      <div class="illustration-card">
+        <img src="assets/shipment_illustration.png" alt="Shipment Illustration" class="illustration-image">
+        <h2>Effortless Shipment Management</h2>
+        <p>Manage your shipments with ease, from creation to delivery. Track, update, and oversee all your logistics in one intuitive platform.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll(".toggle-password").forEach((button) => {
+      button.addEventListener("click", () => {
+        const targetId = button.dataset.target;
+        const passwordInput = document.getElementById(targetId);
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          button.textContent = "Hide";
+          // If using Font Awesome:
+          // button.classList.remove("fa-eye");
+          // button.classList.add("fa-eye-slash");
+        } else {
+          passwordInput.type = "password";
+          button.textContent = "Show";
+          // If using Font Awesome:
+          // button.classList.remove("fa-eye-slash");
+          // button.classList.add("fa-eye");
+        }
+      });
+    });
+
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const msgBox = document.getElementById("msg");
+
+      if (password !== confirmPassword) {
+        msgBox.textContent = "Passwords do not match.";
+        msgBox.style.color = "red";
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            password
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.status === 201) {
+          msgBox.textContent = "Signup successful! Redirecting to login...";
+          msgBox.style.color = "green";
+          setTimeout(() => window.location.href = "/login", 1500);
+        } else {
+          msgBox.textContent = data.detail || "Signup failed.";
+          msgBox.style.color = "red";
+        }
+      } catch (err) {
+        console.error(err);
+        msgBox.textContent = "Something went wrong.";
+        msgBox.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>

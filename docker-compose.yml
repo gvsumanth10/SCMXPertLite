@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  web_app:
+    build:
+      context: . # Build context is the root of your project
+      dockerfile: Dockerfile.backend # Point to the specific Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # These environment variables will be loaded from your project's root .env file
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_CLUSTER_NAME: ${MONGO_CLUSTER_NAME}
+      MONGO_DB_NAME: ${MONGO_DB_NAME}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRES: 3600
+      SECRET_KEY: ${SECRET_KEY} # For reCAPTCHA
+      reCAPTCHA_VERIFY_URL: ${reCAPTCHA_VERIFY_URL}
+    # Mount volumes for development to instantly see changes (optional)
+    volumes:
+      - ./main.py:/app/main.py
+      - ./core:/app/core
+      - ./models:/app/models
+      - ./routes:/app/routes
+      - ./frontend:/app/frontend
+
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer
+    environment:
+      KAFKA_BROKER: host.docker.internal:9092 # For Docker Desktop to reach host Kafka
+      KAFKA_TOPIC: sensor_data_topic
+    depends_on:
+      - web_app # Or another service, for ordering, though not strictly required for producer
+
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    environment:
+      KAFKA_BROKER: host.docker.internal:9092 # For Docker Desktop to reach host Kafka
+      KAFKA_TOPIC: sensor_data_topic
+      KAFKA_GROUP_ID: sensor_data_group
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_CLUSTER_NAME: ${MONGO_CLUSTER_NAME}
+      MONGO_DB_NAME: ${MONGO_DB_NAME}
+    depends_on:
+      - web_app # Or another service, for ordering
