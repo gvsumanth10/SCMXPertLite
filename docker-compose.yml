@@ -1,14 +1,15 @@
-version: '3.8'
+
 
 services:
   web_app:
     build:
       context: . # Build context is the root of your project
       dockerfile: Dockerfile.backend # Point to the specific Dockerfile
+    container_name: backend-1
     ports:
       - "8000:8000"
     environment:
-      # These environment variables will be loaded from your project's root .env file
+      # These environment variables will be loaded from your project's root .env file]
       MONGO_USERNAME: ${MONGO_USERNAME}
       MONGO_PASSWORD: ${MONGO_PASSWORD}
       MONGO_CLUSTER_NAME: ${MONGO_CLUSTER_NAME}
@@ -30,18 +31,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.producer
+    container_name: producer-1
     environment:
-      KAFKA_BROKER: host.docker.internal:9092 # For Docker Desktop to reach host Kafka
+      KAFKA_BROKER: kafka:9092 # For Docker Desktop to reach host Kafka
       KAFKA_TOPIC: sensor_data_topic
     depends_on:
       - web_app # Or another service, for ordering, though not strictly required for producer
+      - kafka
 
   consumer:
     build:
       context: .
       dockerfile: Dockerfile.consumer
+    container_name: consumer-1
     environment:
-      KAFKA_BROKER: host.docker.internal:9092 # For Docker Desktop to reach host Kafka
+      KAFKA_BROKER: kafka:9092 # For Docker Desktop to reach host Kafka
       KAFKA_TOPIC: sensor_data_topic
       KAFKA_GROUP_ID: sensor_data_group
       MONGO_USERNAME: ${MONGO_USERNAME}
@@ -49,4 +53,29 @@ services:
       MONGO_CLUSTER_NAME: ${MONGO_CLUSTER_NAME}
       MONGO_DB_NAME: ${MONGO_DB_NAME}
     depends_on:
+      - kafka
+      - producer
       - web_app # Or another service, for ordering
+
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    environment:
+      KAFKA_KRAFT_MODE: "true"
+      KAFKA_ENABLE_KRAFT: "yes"
+      KAFKA_CFG_NODE_ID: "1"
+      KAFKA_CFG_PROCESS_ROLES: "controller,broker"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_CFG_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_HEAP_OPTS: "-Xmx512m -Xms256m"
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami/kafka
+
+volumes:
+  kafka_data:

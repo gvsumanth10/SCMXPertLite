@@ -1,4 +1,3 @@
-# core/auth.py
 from fastapi import Depends, HTTPException, status
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
@@ -45,10 +44,10 @@ async def verify_recaptcha(recaptcha_response: str):
     }
     response = requests.post(reCAPTCHA_VERIFY_URL, data=payload)
     result = response.json()
-    print(f"reCAPTCHA verification result: {result}") # Add this line for debugging
+    print(f"reCAPTCHA verification result: {result}") 
 
     if not result.get("success"):
         error_codes = result.get("error-codes", [])
-        print(f"reCAPTCHA error codes: {error_codes}") # Log error codes
+        print(f"reCAPTCHA error codes: {error_codes}")
         raise HTTPException(status_code=400, detail="reCAPTCHA verification failed. Please try again.")
     return True

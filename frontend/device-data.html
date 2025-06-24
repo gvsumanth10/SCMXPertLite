@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Device Data | EXF</title>
-  <!-- <link rel="stylesheet" href="/static/styles.css" /> -->
+  <title>Device Data | SCMXPertLite-EXF</title>
   <link rel="icon" type="image/png" href="assets/Exafluence-favicon.png" />
-  <!-- Font Awesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
        /* General Body and HTML Reset */
@@ -605,6 +603,45 @@ body {
     padding: 10px 20px;
 }
 
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.pagination-button {
+    padding: 8px 12px;
+    background-color: var(--card-background);
+    color: var(--primary-blue);
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    font-size: 0.9em;
+}
+
+.pagination-button:hover {
+    background-color: var(--light-gray);
+    border-color: var(--primary-blue);
+}
+
+.pagination-button.active {
+    background-color: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+    font-weight: bold;
+}
+
+.pagination-button:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: var(--medium-gray);
+}
+
 /* ------------------------------------------------------------- */
 /* Responsive Adjustments for Dashboard Layout */
 /* ------------------------------------------------------------- */
@@ -770,11 +807,10 @@ body {
   </style>
 </head>
 <body class="device-data-page">
-    <!-- Top Navigation (Consistent with other pages) -->
     <div class="top-nav">
         <div class="logo-section">
             <img src="assets/exf_company_logo.png" class="nav-logo" alt="EXF" />
-            <span class="brand-title">EXF</span>
+            <span class="brand-title">SCMXPertLite-EXF</span>
         </div>
         <div class="top-nav-buttons">
             <a href="/dashboard" class="top-nav-button"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -788,9 +824,7 @@ body {
         </div>
     </div>
 
-    <!-- Main Content Wrapper (Side Nav + Page Content) -->
     <div class="main-content-wrapper">
-        <!-- Sidebar Navigation (Consistent with other pages) -->
         <div class="side-nav">
             <ul class="nav-section">
                 <li><a href="/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
@@ -804,12 +838,9 @@ body {
             </ul>
         </div>
 
-        <!-- Page Specific Content (Wrapped for consistent layout) -->
         <div class="shipments-page-content">
-            <div class="form-card"> <!-- Reusing form-card for consistent styling -->
-                <h2><i class="fas fa-microchip"></i> All Device Data</h2>
-                <div class="table-container"> <!-- Added for responsive table scroll and styling -->
-                    <table id="device-data-table">
+            <div class="form-card"> <h2><i class="fas fa-microchip"></i> All Device Data</h2>
+                <div class="table-container"> <table id="device-data-table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -826,6 +857,7 @@ body {
                         </tbody>
                     </table>
                 </div>
+                <div id="pagination-controls" class="pagination-container"></div>
                 <div id="msg" class="message"></div>
             </div>
         </div>
@@ -835,6 +867,11 @@ body {
     const token = localStorage.getItem("token");
     const deviceTableBody = document.getElementById("deviceTableBody");
     const msgBox = document.getElementById("msg");
+    const paginationControls = document.getElementById("pagination-controls");
+
+    let allDeviceData = [];
+    let currentPage = 1;
+    const rowsPerPage = 10; // More rows for log data
 
     // Redirect if no token or token expired (initial check)
     if (!token) {
@@ -842,6 +879,93 @@ body {
         msgBox.style.color = "red";
         setTimeout(() => window.location.href = "/login", 1500);
     }
+
+    function displayDeviceData(page) {
+        deviceTableBody.innerHTML = "";
+        page--; // adjust for zero-based index
+
+        const start = rowsPerPage * page;
+        const end = start + rowsPerPage;
+        const paginatedItems = allDeviceData.slice(start, end);
+
+        if (paginatedItems.length === 0 && allDeviceData.length > 0) {
+            deviceTableBody.innerHTML = `<tr><td colspan="7">No data on this page.</td></tr>`;
+            return;
+        }
+
+        paginatedItems.forEach((device, index) => {
+            const globalIndex = start + index + 1;
+            const row = `
+                <tr>
+                  <td data-label="#">${globalIndex}</td>
+                  <td data-label="Device ID">${device.Device_ID}</td>
+                  <td data-label="Battery Level (V)">${device.Battery_Level}V</td>
+                  <td data-label="Temperature (°C)">${device.First_Sensor_temperature}°C</td>
+                  <td data-label="Route From">${device.Route_From}</td>
+                  <td data-label="Route To">${device.Route_To}</td>
+                  <td data-label="Timestamp">${new Date(device.Timestamp_IST).toLocaleString()}</td>
+                </tr>
+              `;
+            deviceTableBody.insertAdjacentHTML("beforeend", row);
+        });
+    }
+
+    function setupPagination() {
+        paginationControls.innerHTML = "";
+        const pageCount = Math.ceil(allDeviceData.length / rowsPerPage);
+
+        const prevButton = document.createElement('button');
+        prevButton.classList.add('pagination-button');
+        prevButton.innerText = 'Prev';
+        paginationControls.appendChild(prevButton);
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayDeviceData(currentPage);
+                updatePaginationButtons();
+            }
+        });
+
+        for (let i = 1; i <= pageCount; i++) {
+            const btn = document.createElement('button');
+            btn.classList.add('pagination-button');
+            btn.innerText = i;
+            btn.addEventListener('click', () => {
+                currentPage = i;
+                displayDeviceData(currentPage);
+                updatePaginationButtons();
+            });
+            paginationControls.appendChild(btn);
+        }
+
+        const nextButton = document.createElement('button');
+        nextButton.classList.add('pagination-button');
+        nextButton.innerText = 'Next';
+        paginationControls.appendChild(nextButton);
+        nextButton.addEventListener('click', () => {
+            if (currentPage < pageCount) {
+                currentPage++;
+                displayDeviceData(currentPage);
+                updatePaginationButtons();
+            }
+        });
+        updatePaginationButtons();
+    }
+
+    function updatePaginationButtons() {
+        const pageCount = Math.ceil(allDeviceData.length / rowsPerPage);
+        const buttons = paginationControls.querySelectorAll('.pagination-button');
+        buttons[0].disabled = currentPage === 1;
+        buttons[buttons.length - 1].disabled = currentPage === pageCount;
+
+        buttons.forEach(button => {
+            const pageNum = parseInt(button.innerText);
+            if (!isNaN(pageNum)) {
+                button.classList.toggle('active', pageNum === currentPage);
+            }
+        });
+    }
+
 
     async function loadDeviceData() {
       if (!token) return; // Prevent fetch if no token
@@ -854,27 +978,17 @@ body {
 
         const data = await res.json();
         if (res.ok) {
-          deviceTableBody.innerHTML = ""; // Clear existing rows
-          if (data.length === 0) {
-            deviceTableBody.innerHTML = '<tr><td colspan="7">No device data found.</td></tr>';
-          } else {
-            // Sort by timestamp in descending order (latest first)
-            data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          // Sort by timestamp in descending order (latest first)
+          data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          allDeviceData = data;
 
-            data.forEach((device, index) => {
-              const row = `
-                <tr>
-                  <td data-label="#">${index + 1}</td>
-                  <td data-label="Device ID">${device.Device_ID}</td>
-                  <td data-label="Battery Level (V)">${device.Battery_Level}V</td>
-                  <td data-label="Temperature (°C)">${device.First_Sensor_temperature}°C</td>
-                  <td data-label="Route From">${device.Route_From}</td>
-                  <td data-label="Route To">${device.Route_To}</td>
-                  <td data-label="Timestamp">${new Date(device.Timestamp_IST).toLocaleString()}</td>
-                </tr>
-              `;
-              deviceTableBody.insertAdjacentHTML("beforeend", row);
-            });
+          if (allDeviceData.length === 0) {
+            deviceTableBody.innerHTML = '<tr><td colspan="7">No device data found.</td></tr>';
+            paginationControls.innerHTML = "";
+          } else {
+            currentPage = 1;
+            displayDeviceData(currentPage);
+            setupPagination();
           }
         } else {
             msgBox.textContent = data.detail || "Failed to fetch device data.";

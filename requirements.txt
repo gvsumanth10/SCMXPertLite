@@ -13,3 +13,4 @@ python-dotenv
 git+https://github.com/psf/requests.git@main
 pymongo
 kafka-python
+pytz

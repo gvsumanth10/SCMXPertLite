@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Shipments | EXF</title>
-  <!-- <link rel="stylesheet" href="/static/styles.css" /> -->
+  <title>My Shipments | SCMXPertLite-EXF</title>
   <link rel="icon" type="image/png" href="assets/Exafluence-favicon.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
@@ -615,6 +614,45 @@ body {
     color: var(--dark-blue);
 }
 
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.pagination-button {
+    padding: 8px 12px;
+    background-color: var(--card-background);
+    color: var(--primary-blue);
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    font-size: 0.9em;
+}
+
+.pagination-button:hover {
+    background-color: var(--light-gray);
+    border-color: var(--primary-blue);
+}
+
+.pagination-button.active {
+    background-color: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+    font-weight: bold;
+}
+
+.pagination-button:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: var(--medium-gray);
+}
+
 /* ------------------------------------------------------------- */
 /* Responsive Adjustments for Dashboard Layout */
 /* ------------------------------------------------------------- */
@@ -790,7 +828,7 @@ body {
     <div class="top-nav">
         <div class="logo-section">
             <img src="assets/exf_company_logo.png" class="nav-logo" alt="EXF" />
-            <span class="brand-title">EXF</span>
+            <span class="brand-title">SCMXPertLite-EXF</span>
         </div>
         <div class="top-nav-buttons">
             <a href="/dashboard" class="top-nav-button"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -833,33 +871,123 @@ body {
                             </tr>
                         </thead>
                         <tbody id="shipment-body">
-                          <tr><td colspan="7"></td></tr>
+                          <tr><td colspan="7">Loading your shipments...</td></tr>
                         </tbody>
                     </table>
-                    <div id="msg" class="message"></div>
                 </div>
+                <div id="pagination-controls" class="pagination-container"></div>
+                <div id="msg" class="message"></div>
             </div>
         </div>
     </div>
 
   <script>
     const token = localStorage.getItem("token");
-    // const shipmentsTableBody = document.querySelector("shipment-body");
     const msg = document.getElementById("msg");
-    const table = document.getElementById("shipments-table");
-    const body = document.getElementById("shipment-body");
+    const tableBody = document.getElementById("shipment-body");
+    const paginationControls = document.getElementById("pagination-controls");
 
-    // Redirect if no token or token expired (initial check)
+    let myShipments = [];
+    let currentPage = 1;
+    const rowsPerPage = 5;
+
+    // Redirect if no token
     if (!token) {
         msg.textContent = "Unauthorized. Please log in.";
         msg.style.color = "red";
         setTimeout(() => window.location.href = "/login", 1500);
     }
 
+    function displayMyShipments(page) {
+        tableBody.innerHTML = "";
+        page--; // adjust for zero-based index
+
+        const start = rowsPerPage * page;
+        const end = start + rowsPerPage;
+        const paginatedItems = myShipments.slice(start, end);
+        
+        if (paginatedItems.length === 0 && myShipments.length > 0) {
+            tableBody.innerHTML = `<tr><td colspan="7">No shipments on this page.</td></tr>`;
+            return;
+        }
+
+        paginatedItems.forEach((shipment, index) => {
+            const globalIndex = start + index + 1;
+            const row = `
+            <tr>
+              <td data-label="#">${globalIndex}</td>
+              <td data-label="Shipment No.">${shipment.shipment_number || "N/A"}</td>
+              <td data-label="Route">${shipment.route || "-"}</td>
+              <td data-label="Sensor">${shipment.device || "-"}</td>
+              <td data-label="Goods Type">${shipment.goods_type || "-"}</td>
+              <td data-label="Delivery Date">${shipment.delivery_date?.split("T")[0] || "N/A"}</td>
+              <td data-label="Status">${shipment.status || "Pending"}</td>
+            </tr>
+            `;
+            tableBody.insertAdjacentHTML("beforeend", row);
+        });
+    }
+
+    function setupPagination() {
+        paginationControls.innerHTML = "";
+        const pageCount = Math.ceil(myShipments.length / rowsPerPage);
+
+        const prevButton = document.createElement('button');
+        prevButton.classList.add('pagination-button');
+        prevButton.innerText = 'Prev';
+        paginationControls.appendChild(prevButton);
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayMyShipments(currentPage);
+                updatePaginationButtons();
+            }
+        });
+
+        for (let i = 1; i <= pageCount; i++) {
+            const btn = document.createElement('button');
+            btn.classList.add('pagination-button');
+            btn.innerText = i;
+            btn.addEventListener('click', () => {
+                currentPage = i;
+                displayMyShipments(currentPage);
+                updatePaginationButtons();
+            });
+            paginationControls.appendChild(btn);
+        }
+
+        const nextButton = document.createElement('button');
+        nextButton.classList.add('pagination-button');
+        nextButton.innerText = 'Next';
+        paginationControls.appendChild(nextButton);
+        nextButton.addEventListener('click', () => {
+            if (currentPage < pageCount) {
+                currentPage++;
+                displayMyShipments(currentPage);
+                updatePaginationButtons();
+            }
+        });
+        updatePaginationButtons();
+    }
+
+    function updatePaginationButtons() {
+        const pageCount = Math.ceil(myShipments.length / rowsPerPage);
+        const buttons = paginationControls.querySelectorAll('.pagination-button');
+        buttons[0].disabled = currentPage === 1;
+        buttons[buttons.length - 1].disabled = currentPage === pageCount;
+
+        buttons.forEach(button => {
+            const pageNum = parseInt(button.innerText);
+            if (!isNaN(pageNum)) {
+                button.classList.toggle('active', pageNum === currentPage);
+            }
+        });
+    }
+
     async function loadShipments() {
-      if (!token) return; // Prevent fetch if no token
+      if (!token) return;
       try {
-        const res = await fetch("/api/shipments/mine", { // Assuming this is the correct endpoint for user's shipments
+        const res = await fetch("/api/shipments/mine", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -867,34 +995,20 @@ body {
         const shipments = await res.json();
 
         if (res.ok) {
-          
-          body.innerHTML = ""; // Clear existing rows
-
-          if (shipments.length === 0) {
-            msg.textContent = "No shipments found.";
-            msg.style.color = "orange";
+          myShipments = shipments;
+          if (myShipments.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7">You have not created any shipments yet.</td></tr>';
+            paginationControls.innerHTML = "";
             return;
           }
 
-          msg.textContent = ""; // Clear any previous messages
-          shipments.forEach((shipment,index) => {
-            const row = `
-            <tr>
-              <td data-label="Shipment ID">${index + 1}</td>
-              <td data-label="Origin">${shipment.shipment_number || "N/A"}</td>
-              <td data-label="Destination">${shipment.route || "-"}</td>
-              <td data-label="Current Location">${shipment.device || "-"}</td>
-              <td data-label="Last Updated">${shipment.goods_type || "-"}</td>
-              <td data-label="Delivery Date">${shipment.delivery_date?.split("T")[0] || "N/A"}</td>
-              <td data-label="Status">${shipment.status || "Pending"}</td>
-            </tr>
-            `;
-            body.insertAdjacentHTML("beforeend", row);
-            // body.appendChild(row);
-          });
+          currentPage = 1;
+          displayMyShipments(currentPage);
+          setupPagination();
+          
         } else {
-          const err = await res.json();
-          msg.textContent = err.detail || "Failed to load shipments.";
+          const errData = await res.json();
+          msg.textContent = errData.detail || "Failed to load shipments.";
           msg.style.color = "red";
           if (res.status === 401 || res.status === 403) {
               localStorage.removeItem("token");

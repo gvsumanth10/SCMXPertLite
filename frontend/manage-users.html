@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin | Manage Users</title>
-  <!-- <link rel="stylesheet" href="/static/styles.css" /> -->
+  <title>Admin | Manage Users | SCMXPertLite-EXF</title>
   <link rel="icon" type="image/png" href="assets/Exafluence-favicon.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
@@ -599,6 +598,45 @@ body {
     padding: 10px 20px;
 }
 
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.pagination-button {
+    padding: 8px 12px;
+    background-color: var(--card-background);
+    color: var(--primary-blue);
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    font-size: 0.9em;
+}
+
+.pagination-button:hover {
+    background-color: var(--light-gray);
+    border-color: var(--primary-blue);
+}
+
+.pagination-button.active {
+    background-color: var(--primary-blue);
+    color: white;
+    border-color: var(--primary-blue);
+    font-weight: bold;
+}
+
+.pagination-button:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: var(--medium-gray);
+}
+
 /* ------------------------------------------------------------- */
 /* Responsive Adjustments for Dashboard Layout */
 /* ------------------------------------------------------------- */
@@ -769,7 +807,7 @@ body {
   <div class="top-nav">
     <div class="logo-section">
       <img src="assets/exf_company_logo.png" class="nav-logo" alt="EXF" />
-      <span class="brand-title">EXF</span>
+      <span class="brand-title">SCMXPertLite-EXF</span>
     </div>
     <div class="top-nav-buttons">
       <a href="/dashboard" class="top-nav-button"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
@@ -799,20 +837,22 @@ body {
 
     <div class="shipments-page-content">
       <div class="form-card"> <h2><i class="fas fa-users-cog"></i>User Management</h2>
-        <div class="table-container"> <table id="users-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Created At</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="userTableBody"></tbody>
-          </table>
+        <div class="table-container">
+            <table id="users-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
         </div>
+        <div id="pagination-controls" class="pagination-container"></div>
         <div id="msg"></div>
       </div>
     </div>
@@ -844,7 +884,12 @@ body {
     const tableBody = document.getElementById("userTableBody");
     const modal = document.getElementById("userModal");
     const form = document.getElementById("userForm");
-    const msgBox = document.getElementById("msg"); // Get the message div
+    const msgBox = document.getElementById("msg");
+    const paginationControls = document.getElementById("pagination-controls");
+
+    let allUsers = [];
+    let currentPage = 1;
+    const rowsPerPage = 5;
 
     // Redirect if no token or token expired (initial check)
     if (!token) {
@@ -852,6 +897,98 @@ body {
         msgBox.style.color = "red";
         setTimeout(() => window.location.href = "/login", 1500);
     }
+
+    function displayUsers(page) {
+        tableBody.innerHTML = "";
+        page--; // adjust for zero-based index
+
+        const start = rowsPerPage * page;
+        const end = start + rowsPerPage;
+        const paginatedItems = allUsers.slice(start, end);
+
+        if (paginatedItems.length === 0 && allUsers.length > 0) {
+            tableBody.innerHTML = `<tr><td colspan="6">No users on this page.</td></tr>`;
+            return;
+        }
+        
+        paginatedItems.forEach((user, index) => {
+            const globalIndex = start + index + 1;
+            const isAdmin = user.role === "admin";
+            const row = `
+            <tr>
+                <td data-label="#">${globalIndex}</td>
+                <td data-label="Username">${user.username}</td>
+                <td data-label="Email">${user.email}</td>
+                <td data-label="Role">${user.role}</td>
+                <td data-label="Created At">${user.created_at?.split("T")[0]}</td>
+                <td data-label="Actions">
+                <button class="btn edit-btn" onclick='openModal(${JSON.stringify(user)}, false)'>View</button>
+                <button class="btn edit-btn" onclick='openModal(${JSON.stringify(user)}, true)'>Edit</button>
+                ${!isAdmin ? `<button class="btn edit-btn" onclick='promoteUser("${user.id}")'>Make Admin</button>` : ""}
+                ${!isAdmin ? `<button class="btn delete-btn" onclick='deleteUser("${user.id}")'>Delete</button>` : ""}
+                </td>
+            </tr>
+            `;
+            tableBody.insertAdjacentHTML("beforeend", row);
+        });
+    }
+
+    function setupPagination() {
+        paginationControls.innerHTML = "";
+        const pageCount = Math.ceil(allUsers.length / rowsPerPage);
+
+        const prevButton = document.createElement('button');
+        prevButton.classList.add('pagination-button');
+        prevButton.innerText = 'Prev';
+        paginationControls.appendChild(prevButton);
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayUsers(currentPage);
+                updatePaginationButtons();
+            }
+        });
+
+        for (let i = 1; i <= pageCount; i++) {
+            const btn = document.createElement('button');
+            btn.classList.add('pagination-button');
+            btn.innerText = i;
+            btn.addEventListener('click', () => {
+                currentPage = i;
+                displayUsers(currentPage);
+                updatePaginationButtons();
+            });
+            paginationControls.appendChild(btn);
+        }
+
+        const nextButton = document.createElement('button');
+        nextButton.classList.add('pagination-button');
+        nextButton.innerText = 'Next';
+        paginationControls.appendChild(nextButton);
+        nextButton.addEventListener('click', () => {
+            if (currentPage < pageCount) {
+                currentPage++;
+                displayUsers(currentPage);
+                updatePaginationButtons();
+            }
+        });
+        updatePaginationButtons();
+    }
+
+    function updatePaginationButtons() {
+        const pageCount = Math.ceil(allUsers.length / rowsPerPage);
+        const buttons = paginationControls.querySelectorAll('.pagination-button');
+        buttons[0].disabled = currentPage === 1;
+        buttons[buttons.length - 1].disabled = currentPage === pageCount;
+
+        buttons.forEach(button => {
+            const pageNum = parseInt(button.innerText);
+            if (!isNaN(pageNum)) {
+                button.classList.toggle('active', pageNum === currentPage);
+            }
+        });
+    }
+
 
     async function loadUsers() {
       if (!token) return; // Prevent fetch if no token
@@ -862,29 +999,14 @@ body {
 
         const users = await res.json();
         if (res.ok) {
-          tableBody.innerHTML = "";
-          if (users.length === 0) {
+            allUsers = users;
+             if (allUsers.length === 0) {
               tableBody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
+              paginationControls.innerHTML = "";
           } else {
-            users.forEach((user, index) => {
-              const isAdmin = user.role === "admin";
-              const row = `
-                <tr>
-                  <td data-label="#">${index + 1}</td>
-                  <td data-label="Username">${user.username}</td>
-                  <td data-label="Email">${user.email}</td>
-                  <td data-label="Role">${user.role}</td>
-                  <td data-label="Created At">${user.created_at?.split("T")[0]}</td>
-                  <td data-label="Actions">
-                    <button class="btn edit-btn" onclick='openModal(${JSON.stringify(user)}, false)'>View</button>
-                    <button class="btn edit-btn" onclick='openModal(${JSON.stringify(user)}, true)'>Edit</button>
-                    ${!isAdmin ? `<button class="btn edit-btn" onclick='promoteUser("${user.id}")'>Make Admin</button>` : ""}
-                    ${!isAdmin ? `<button class="btn delete-btn" onclick='deleteUser("${user.id}")'>Delete</button>` : ""}
-                  </td>
-                </tr>
-              `;
-              tableBody.insertAdjacentHTML("beforeend", row);
-            });
+            currentPage = 1;
+            displayUsers(currentPage);
+            setupPagination();
           }
         } else {
             msgBox.textContent = users.detail || "Failed to fetch users.";

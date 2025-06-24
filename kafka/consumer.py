@@ -14,7 +14,7 @@ cluster_name = os.getenv('MONGO_CLUSTER_NAME', 'trailcluster')
 DB_NAME = os.getenv("MONGO_DB_NAME", "SCMLite")
 
 # Kafka configuration
-KAFKA_BROKER = 'localhost:9092'  # Replace with your Kafka broker address if different
+KAFKA_BROKER = 'kafka:9092'  # Replace with your Kafka broker address if different
 KAFKA_TOPIC = 'sensor_data_topic'
 KAFKA_GROUP_ID = 'sensor_data_group' # Consumer group ID
 

@@ -7,7 +7,7 @@ from datetime import datetime
 import pytz # Import pytz for timezone handling
 
 # Kafka configuration
-KAFKA_BROKER = 'localhost:9092'  # Replace with your Kafka broker address if different
+KAFKA_BROKER = 'kafka:9092'  # Replace with your Kafka broker address if different
 KAFKA_TOPIC = 'sensor_data_topic'
 
 # Define Indian Standard Time (IST) timezone

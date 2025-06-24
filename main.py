@@ -12,7 +12,7 @@ from routes.device_routes import router as device_router
 # Load .env variables
 load_dotenv()
 
-app = FastAPI(title="EXF Backend API")
+app = FastAPI(title="SCMXPertLite-EXF Backend API")
 
 # CORS Middleware
 app.add_middleware(
